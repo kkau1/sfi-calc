@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SFI Engineering Calculator | 日首國際工程計算器</title>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Google Fonts (Inter & JetBrains Mono for formulas) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Load FontAwesome for Engineering UI Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+          },
+          colors: {
+            sfi: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#0066cc',
+              600: '#0052a3',
+              700: '#003d7a',
+              800: '#002952',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+      min-height: 100vh;
+    }
+
+    /* Smooth tab transition */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.22s ease-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Custom Scrollbar for Reference Table */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Remove number input spinners for cleaner look */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
+    /* Print / PDF Submittal Sheet Styling */
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 12px;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .main-wrapper {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .calculator-card {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 20px !important;
+      }
+      #project-panel {
+        display: block !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        margin-bottom: 16px !important;
+      }
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased py-6 px-3 sm:px-6 lg:px-8">
+
+  <!-- Toast Notification Box (Replaces alert) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
+
+  <div class="main-wrapper max-w-4xl mx-auto">
+
+    <!-- Top Brand & Action Header -->
+    <header class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-6 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+        <a href="https://www.sunfirst.com.hk/tc/" target="_blank" rel="noopener noreferrer" class="inline-block focus:outline-none group" title="Visit Sun First International Website">
+          <img 
+            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAX0AAAA/CAYAAAAMnhiCAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo4QzEwMTJBMDBCMzNFNDExQkFCQUUwQkMwNzg0NjVCRiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo3QUEwM0VGRUE2MEYxMUU0OTFDRUUxNDg5OUNCMTMwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo3QUEwM0VGREE2MEYxMUU0OTFDRUUxNDg5OUNCMTMwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NzA2MDMzQzY0MzIwNjgxMTgwODM4NTg4NUZBNkM2QTgiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OEMxMDEyQTAwQjMzRTQxMUJBQkFFMEJDMDc4NDY1QkYiLz4gPC9yZGY6RGVzY3Jp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" 
+            alt="Sun First International Logo" 
+            class="h-12 sm:h-14 w-auto object-contain group-hover:opacity-85 transition-opacity"
+            onerror="this.onerror=null; this.src='https://placehold.co/220x56/0052a3/ffffff?text=SUN+FIRST+INTL';"
+          >
+        </a>
+        <div class="sm:border-l sm:border-slate-200 sm:pl-4">
+          <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">SFI Engineering Suite</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Hydraulic, Pressure Vessel, Pump &amp; Orifice Sizing</p>
+        </div>
+      </div>
+
+      <!-- Global Utility Toolbar -->
+      <div class="flex flex-wrap items-center justify-center gap-2 no-print">
+        <button onclick="toggleProjectPanel()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          <i class="fa-solid fa-file-signature text-sfi-600"></i>
+          <span>Project Info 工程資料</span>
+        </button>
+        <button onclick="loadSampleValues()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-sfi-600 transition" title="Fill current tab with typical engineering values">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Sample 範例</span>
+        </button>
+        <button onclick="copyCurrentSummary()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition" title="Copy calculation summary to clipboard">
+          <i class="fa-regular fa-copy"></i>
+          <span>Copy 複製</span>
+        </button>
+        <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-sfi-600 hover:bg-sfi-700 text-white shadow-sm transition">
+          <i class="fa-solid fa-print"></i>
+          <span>Print / PDF 列印計算書</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Collapsible Project & Submittal Reference Bar -->
+    <section id="project-panel" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 mb-4 transition-all">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-sfi-600 flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-list"></i>
+          Submittal &amp; Project Reference (工程計算書抬頭資料)
+        </h2>
+        <span class="text-xs text-slate-400 no-print">Included automatically when printing to PDF</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Project Name 工程名稱</label>
+          <input type="text" id="proj-name" placeholder="e.g., Commercial Tower Plumbing" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-sfi-500 focus:border-sfi-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">System / Equipment Tag 設備編號</label>
+          <input type="text" id="proj-tag" placeholder="e.g., FWP-01 / PV-01" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-sfi-500 focus:border-sfi-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Prepared By 計算工程師</label>
+          <input type="text" id="proj-eng" placeholder="e.g., SFI Engineering Dept." class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-sfi-500 focus:border-sfi-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Date 日期</label>
+          <input type="date" id="proj-date" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-sfi-500 focus:border-sfi-500 outline-none">
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 bg-slate-200/80 p-1.5 rounded-2xl mb-4 no-print" role="tablist">
+      <button class="tab-btn active flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all bg-sfi-600 text-white shadow-sm" onclick="switchTab(event, 'tab-tank')">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-database"></i> 1. Fixed Tank</span>
+        <span class="text-[10px] font-normal opacity-90 mt-0.5">定速泵壓力鼓</span>
+      </button>
+      <button class="tab-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-white/60" onclick="switchTab(event, 'tab-vfd-tank')">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-wave-square"></i> 2. VFD Tank</span>
+        <span class="text-[10px] font-normal opacity-80 mt-0.5">變頻泵壓力鼓</span>
+      </button>
+      <button class="tab-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-white/60" onclick="switchTab(event, 'tab-pump')">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt"></i> 3. Pump Power</span>
+        <span class="text-[10px] font-normal opacity-80 mt-0.5">水泵軸功率</span>
+      </button>
+      <button class="tab-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-white/60" onclick="switchTab(event, 'tab-pipe')">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-water"></i> 4. Velocity</span>
+        <span class="text-[10px] font-normal opacity-80 mt-0.5">喉管流速</span>
+      </button>
+      <button class="tab-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-white/60" onclick="switchTab(event, 'tab-bs5306')">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-fire-extinguisher"></i> 5. BS5306 Orifice</span>
+        <span class="text-[10px] font-normal opacity-80 mt-0.5">消防減壓孔板</span>
+      </button>
+      <button class="tab-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-white/60" onclick="switchTab(event, 'tab-orifice')">
+        <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-dot"></i> 6. Gen. Orifice</span>
+        <span class="text-[10px] font-normal opacity-80 mt-0.5">通用減壓孔板</span>
+      </button>
+    </nav>
+
+    <!-- Main Calculator Card -->
+    <main class="calculator-card bg-white rounded-2xl shadow-md border border-slate-200/80 p-5 sm:p-8">
+
+      <!-- =========================================================
+           TAB 1: FIXED SPEED PRESSURE VESSEL SIZING
+           ========================================================= -->
+      <div id="tab-tank" class="tab-content active">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sfi-600">Module 01 • Pressure Booster System</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Fixed Speed Vessel Sizing (定速泵壓力鼓容積計算)</h2>
+          </div>
+          <button onclick="resetTabInputs('tab-tank')" class="self-start sm:self-auto text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 no-print">
+            <i class="fa-solid fa-rotate-left"></i> Clear 清除
+          </button>
+        </div>
+
+        <!-- Formula Box -->
+        <div class="bg-slate-50 border-l-4 border-sfi-500 rounded-r-xl p-3.5 mb-6 font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <div class="font-sans text-[11px] font-bold uppercase tracking-wider text-sfi-600 mb-1">Governing Formulas (計算公式)</div>
+          <div>V = (16.5 &times; Q<sub>max</sub> &times; P<sub>o(abs)</sub> &times; P<sub>i(abs)</sub>) / [a &times; (P<sub>o</sub> - P<sub>i</sub>) &times; P<sub>p(abs)</sub>]</div>
+          <div class="mt-1">&Delta;V (Usable 有效儲水量) = V &times; P<sub>p(abs)</sub> &times; [1/P<sub>i(abs)</sub> - 1/P<sub>o(abs)</sub>]</div>
+          <div class="font-sans text-[11px] text-slate-500 mt-1">* Where Q<sub>max</sub> is converted to L/min and P<sub>(abs)</sub> = P<sub>(gauge)</sub> + 1.0 bar</div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Input Column -->
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Maximum Flow Rate 最大流量 (Q<sub>max</sub>):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="qmax" step="any" placeholder="e.g., 5" oninput="calculateVolume(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 focus:border-sfi-500 outline-none text-slate-900 font-medium">
+                <select id="qmax-unit" onchange="calculateVolume(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 focus:ring-2 focus:ring-sfi-500 outline-none cursor-pointer">
+                  <option value="L_sec">L/sec</option>
+                  <option value="L_min">L/min</option>
+                  <option value="m3_h">m³/h</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Cut-out Pressure 停泵壓力 P<sub>o</sub>:
+                </label>
+                <div class="flex gap-2">
+                  <input type="number" id="po" step="0.1" placeholder="e.g., 4.5" oninput="calculateVolume(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                  <select id="po-unit" onchange="calculateVolume(true)" class="w-1/3 px-2 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                    <option value="bar">Bar</option>
+                    <option value="psi">psi</option>
+                    <option value="mpa">MPa</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Cut-in Pressure 起泵壓力 P<sub>i</sub>:
+                </label>
+                <div class="flex gap-2">
+                  <input type="number" id="pi" step="0.1" placeholder="e.g., 3.0" oninput="calculateVolume(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                  <select id="pi-unit" onchange="calculateVolume(true)" class="w-1/3 px-2 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                    <option value="bar">Bar</option>
+                    <option value="psi">psi</option>
+                    <option value="mpa">MPa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-sm font-semibold text-slate-700">
+                  Pre-charge Pressure 預充氣壓 P<sub>p</sub> (Gauge):
+                </label>
+                <button type="button" onclick="autoSetPrecharge()" class="text-xs font-semibold text-sfi-600 hover:text-sfi-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-md transition no-print">
+                  <i class="fa-solid fa-bolt-lightning mr-1"></i>Set P<sub>p</sub> = 0.9 &times; P<sub>i</sub>
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <input type="number" id="pp" step="0.1" placeholder="e.g., 2.7 (Typically 0.9 × Pi)" oninput="calculateVolume(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="pp-unit" onchange="calculateVolume(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="bar">Bar</option>
+                  <option value="psi">psi</option>
+                  <option value="mpa">MPa</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-sm font-semibold text-slate-700">
+                  Pump Starts/Stops per hour 每小時啟停次數 (a):
+                </label>
+                <div class="flex gap-1 no-print">
+                  <button type="button" onclick="setStarts(15)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">15</button>
+                  <button type="button" onclick="setStarts(20)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">20</button>
+                  <button type="button" onclick="setStarts(24)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">24</button>
+                  <button type="button" onclick="setStarts(30)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">30</button>
+                </div>
+              </div>
+              <input type="number" id="starts" placeholder="e.g., 24 (Typical 15 - 30)" oninput="calculateVolume(true)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+            </div>
+
+            <button class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 no-print" onclick="calculateVolume(false)">
+              <i class="fa-solid fa-calculator"></i> Calculate Vessel Size 計算容積
+            </button>
+          </div>
+
+          <!-- Output & Schematic Column -->
+          <div class="lg:col-span-5 flex flex-col gap-4">
+            <div id="result-box-tank" class="bg-slate-100 border border-slate-200 rounded-2xl p-5 text-center font-semibold text-slate-700">
+              Enter parameters on the left to calculate vessel sizing.
+            </div>
+
+            <div id="recommendation-box" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 text-center shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">
+                <i class="fa-solid fa-award mr-1"></i>Recommended Standard Vessel (建議選用標準型號)
+              </div>
+              <div id="standard-size" class="text-2xl sm:text-3xl font-extrabold text-pink-600 my-1">-</div>
+              <div id="parallel-tank-suggestion" class="text-xs text-amber-900 mt-1 font-medium"></div>
+            </div>
+
+            <!-- Interactive SVG Pressure Vessel Visual -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4">
+              <svg viewBox="0 0 120 160" class="w-20 h-28 flex-shrink-0 mx-auto">
+                <!-- Tank Legs -->
+                <path d="M35 135 L28 155 M85 135 L92 155" stroke="#475569" stroke-width="5" stroke-linecap="round"/>
+                <!-- Tank Body -->
+                <rect x="22" y="15" width="76" height="122" rx="36" fill="#e2e8f0" stroke="#334155" stroke-width="3.5"/>
+                <!-- Precharge Air Cushion -->
+                <rect x="26" y="19" width="68" height="65" rx="32" fill="#bae6fd" opacity="0.7"/>
+                <!-- Usable Water Diaphragm -->
+                <path id="svg-water-level" d="M26 85 Q60 72 94 85 L94 108 C94 125 78 133 60 133 C42 133 26 125 26 108 Z" fill="#0284c7" opacity="0.85"/>
+                <!-- Labels on Tank -->
+                <text x="60" y="52" text-anchor="middle" font-size="10" font-weight="bold" fill="#0369a1">Air (Pp)</text>
+                <text x="60" y="110" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">&Delta;V Water</text>
+              </svg>
+              <div class="text-xs text-slate-600 space-y-1.5 flex-1">
+                <div class="font-bold text-slate-800">Engineering Guidelines:</div>
+                <p>&bull; <strong>P<sub>p</sub> (Pre-charge):</strong> Typically set to <span class="font-mono font-semibold text-sfi-600">0.9 &times; P<sub>i</sub></span> so diaphragm does not bottom out.</p>
+                <p>&bull; <strong>Starts/hr (a):</strong> Smaller pumps (&lt;4 kW) allow 20–30 starts/hr; larger pumps require 10–15 starts/hr.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 2: VFD PRESSURE VESSEL SIZING
+           ========================================================= -->
+      <div id="tab-vfd-tank" class="tab-content">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sfi-600">Module 02 • Variable Frequency Drive System</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">VFD Pressure Vessel Sizing (變頻泵壓力鼓容積計算)</h2>
+          </div>
+          <button onclick="resetTabInputs('tab-vfd-tank')" class="self-start sm:self-auto text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 no-print">
+            <i class="fa-solid fa-rotate-left"></i> Clear 清除
+          </button>
+        </div>
+
+        <!-- Original Mandatory VFD Warning Alert -->
+        <div class="bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 rounded-xl mb-5 text-center text-xs sm:text-sm">
+          <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+          <strong>Note:</strong> 此公式只供參考，實際需要變頻器供應商確定。<br>
+          <span class="text-xs text-amber-700">(This formula is for reference only; actual requirements must be confirmed by the VFD supplier.)</span>
+        </div>
+
+        <!-- Formula Box -->
+        <div class="bg-slate-50 border-l-4 border-sfi-500 rounded-r-xl p-3.5 mb-6 font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <div class="font-sans text-[11px] font-bold uppercase tracking-wider text-sfi-600 mb-1">Governing Formulas (計算公式)</div>
+          <div>&Delta;V (Usable 有效儲水量) = Q &times; T</div>
+          <div class="mt-1">V = &Delta;V &times; [(P<sub>o</sub> + 1) / (P<sub>o</sub> - P<sub>i</sub>)]</div>
+          <div class="font-sans text-[11px] text-slate-500 mt-1">* Where Q is in L/sec, T is in seconds, and P<sub>o</sub>, P<sub>i</sub> are in Bar (Gauge)</div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Design Flow Rate 設計流量 (Q):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="vfd-q" step="any" placeholder="e.g., 2.4" oninput="calculateVFDTank(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="vfd-q-unit" onchange="calculateVFDTank(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="L_sec">L/sec</option>
+                  <option value="L_min">L/min</option>
+                  <option value="m3_h">m³/h</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-sm font-semibold text-slate-700">
+                  Estimated Time 預計緩衝時間 T (sec):
+                </label>
+                <div class="flex gap-1 no-print">
+                  <button type="button" onclick="setVfdTime(5)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">5s</button>
+                  <button type="button" onclick="setVfdTime(10)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">10s</button>
+                  <button type="button" onclick="setVfdTime(15)" class="text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">15s</button>
+                </div>
+              </div>
+              <p class="text-xs text-slate-500 mb-1.5">* Estimated time for water running from pump to discharge point / VFD ramp-up response</p>
+              <input type="number" id="vfd-t" step="any" placeholder="e.g., 10" oninput="calculateVFDTank(true)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Constant Working Pressure 恆定工作壓力 P<sub>o</sub>:
+                </label>
+                <div class="flex gap-2">
+                  <input type="number" id="vfd-po" step="0.1" placeholder="e.g., 3.5" oninput="calculateVFDTank(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                  <select id="vfd-po-unit" onchange="calculateVFDTank(true)" class="w-1/3 px-2 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                    <option value="bar">Bar</option>
+                    <option value="psi">psi</option>
+                    <option value="mpa">MPa</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Minimum Working Pressure 最低工作壓力 P<sub>i</sub>:
+                </label>
+                <div class="flex gap-2">
+                  <input type="number" id="vfd-pi" step="0.1" placeholder="e.g., 2.5" oninput="calculateVFDTank(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                  <select id="vfd-pi-unit" onchange="calculateVFDTank(true)" class="w-1/3 px-2 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                    <option value="bar">Bar</option>
+                    <option value="psi">psi</option>
+                    <option value="mpa">MPa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 no-print" onclick="calculateVFDTank(false)">
+              <i class="fa-solid fa-calculator"></i> Calculate VFD Vessel Size 計算變頻壓力鼓
+            </button>
+          </div>
+
+          <div class="lg:col-span-5 flex flex-col gap-4">
+            <div id="result-box-vfd" class="bg-slate-100 border border-slate-200 rounded-2xl p-5 text-center font-semibold text-slate-700">
+              Enter parameters on the left to calculate VFD vessel sizing.
+            </div>
+
+            <div id="recommendation-box-vfd" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 text-center shadow-sm">
+              <div class="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1">
+                <i class="fa-solid fa-award mr-1"></i>Standard Vessel Selection (建議選用標準型號)
+              </div>
+              <div id="standard-size-vfd" class="text-2xl sm:text-3xl font-extrabold text-pink-600 my-1">-</div>
+              <div id="parallel-vfd-suggestion" class="text-xs text-amber-900 mt-1 font-medium"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 3: PUMP SHAFT POWER & MOTOR SIZING
+           ========================================================= -->
+      <div id="tab-pump" class="tab-content">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sfi-600">Module 03 • Electrical &amp; Mechanical Sizing</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Pump Shaft Power &amp; Motor Selection (水泵軸功率及摩打計算)</h2>
+          </div>
+          <button onclick="resetTabInputs('tab-pump')" class="self-start sm:self-auto text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 no-print">
+            <i class="fa-solid fa-rotate-left"></i> Clear 清除
+          </button>
+        </div>
+
+        <!-- Formula Box -->
+        <div class="bg-slate-50 border-l-4 border-sfi-500 rounded-r-xl p-3.5 mb-6 font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <div class="font-sans text-[11px] font-bold uppercase tracking-wider text-sfi-600 mb-1">Governing Formula (計算公式)</div>
+          <div>P<sub>2</sub> (Shaft Power) = (Q &times; H &times; SG) / (367 &times; &eta;)</div>
+          <div class="font-sans text-[11px] text-slate-500 mt-1">* Where Q is in m³/h, H is in meters (m), SG is Specific Gravity (1.0 for water), and &eta; is pump efficiency (0–1)</div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Flow Rate 流量 (Q):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="pump-q" step="any" placeholder="e.g., 14" oninput="calculatePumpPower(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="pump-q-unit" onchange="calculatePumpPower(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="L_sec">L/sec</option>
+                  <option value="m3_h">m³/h</option>
+                  <option value="L_min">L/min</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Total Head 總揚程 (H):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="pump-h" step="any" placeholder="e.g., 35" oninput="calculatePumpPower(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="pump-h-unit" onchange="calculatePumpPower(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="m">m (米)</option>
+                  <option value="ft">ft (英尺)</option>
+                  <option value="bar">Bar (巴)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Pump Efficiency 水泵效率 &eta; (%):
+                </label>
+                <input type="number" id="pump-eff" step="any" placeholder="e.g., 75" oninput="calculatePumpPower(true)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Fluid Specific Gravity 比重 (SG):
+                </label>
+                <input type="number" id="pump-sg" value="1.0" step="0.01" oninput="calculatePumpPower(true)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Motor Sizing Safety Margin 摩打安全裕度:
+              </label>
+              <select id="pump-margin" onchange="calculatePumpPower(true)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                <option value="1.0">Direct Selection (0% Margin - Next IEC Size &ge; P2)</option>
+                <option value="1.1" selected>+10% Safety Margin (Standard Engineering Practice)</option>
+                <option value="1.15">+15% Safety Margin (Heavy Duty / Fire Pump)</option>
+              </select>
+            </div>
+
+            <button class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 no-print" onclick="calculatePumpPower(false)">
+              <i class="fa-solid fa-calculator"></i> Calculate Shaft Power 計算功率
+            </button>
+          </div>
+
+          <div class="lg:col-span-5 flex flex-col gap-4">
+            <div id="result-box-pump" class="bg-slate-100 border border-slate-200 rounded-2xl p-5 text-center font-semibold text-slate-700">
+              Enter flow rate, head, and efficiency to calculate required shaft power.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 4: PIPE VELOCITY CALCULATOR
+           ========================================================= -->
+      <div id="tab-pipe" class="tab-content">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sfi-600">Module 04 • Pipeline Hydraulics</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Pipe Velocity Calculator (喉管流速計算)</h2>
+          </div>
+          <button onclick="resetTabInputs('tab-pipe')" class="self-start sm:self-auto text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 no-print">
+            <i class="fa-solid fa-rotate-left"></i> Clear 清除
+          </button>
+        </div>
+
+        <!-- Formula Box -->
+        <div class="bg-slate-50 border-l-4 border-sfi-500 rounded-r-xl p-3.5 mb-6 font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <div class="font-sans text-[11px] font-bold uppercase tracking-wider text-sfi-600 mb-1">Governing Formulas (計算公式)</div>
+          <div>v = Q / A</div>
+          <div class="mt-1">A = &pi; &times; (D / 2)<sup>2</sup></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Flow Rate 流量 (Q):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="pipe-q" step="any" placeholder="e.g., 4.5" oninput="calculateVelocity(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="pipe-q-unit" onchange="calculateVelocity(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="L_sec">L/sec</option>
+                  <option value="L_min">L/min</option>
+                  <option value="m3_h">m³/h</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="no-print">
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Quick Nominal Pipe Preset 常用標準喉管內徑 (Optional):
+              </label>
+              <select id="pipe-preset" onchange="applyPipePreset()" class="w-full px-3.5 py-2 bg-blue-50/60 border border-blue-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 cursor-pointer">
+                <option value="">-- Custom Internal Diameter (自訂內徑) --</option>
+                <optgroup label="BS EN 10255 Medium GI / Steel Pipe (中磅鉛水鐵喉近似內徑)">
+                  <option value="16.1">DN15 (1/2") &rarr; ID ≈ 16.1 mm</option>
+                  <option value="21.7">DN20 (3/4") &rarr; ID ≈ 21.7 mm</option>
+                  <option value="27.3">DN25 (1") &rarr; ID ≈ 27.3 mm</option>
+                  <option value="36.0">DN32 (1-1/4") &rarr; ID ≈ 36.0 mm</option>
+                  <option value="41.9">DN40 (1-1/2") &rarr; ID ≈ 41.9 mm</option>
+                  <option value="53.0">DN50 (2") &rarr; ID ≈ 53.0 mm</option>
+                  <option value="68.7">DN65 (2-1/2") &rarr; ID ≈ 68.7 mm</option>
+                  <option value="80.7">DN80 (3") &rarr; ID ≈ 80.7 mm</option>
+                  <option value="105.3">DN100 (4") &rarr; ID ≈ 105.3 mm</option>
+                  <option value="155.4">DN150 (6") &rarr; ID ≈ 155.4 mm</option>
+                </optgroup>
+                <optgroup label="Exact Nominal Bore (公稱直徑 DN)">
+                  <option value="50">50 mm</option>
+                  <option value="65">65 mm</option>
+                  <option value="80">80 mm</option>
+                  <option value="100">100 mm</option>
+                  <option value="150">150 mm</option>
+                  <option value="200">200 mm</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Internal Pipe Diameter 喉管內徑 (D):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="pipe-d" step="any" placeholder="e.g., 65" oninput="calculateVelocity(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="pipe-d-unit" onchange="calculateVelocity(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="mm">mm</option>
+                  <option value="inch">inch</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 no-print" onclick="calculateVelocity(false)">
+              <i class="fa-solid fa-calculator"></i> Calculate Velocity 計算流速
+            </button>
+          </div>
+
+          <div class="lg:col-span-5 flex flex-col gap-4">
+            <div id="result-box-pipe" class="bg-slate-100 border border-slate-200 rounded-2xl p-5 text-center font-semibold text-slate-700">
+              Enter flow rate and internal pipe diameter to check velocity.
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-600 space-y-1.5">
+              <div class="font-bold text-slate-800 mb-1">Velocity Design Criteria (流速設計參考):</div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                <span><strong>&le; 1.5 m/s:</strong> Optimal for Pump Suction &amp; Quiet Risers</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                <span><strong>1.5 – 2.5 m/s:</strong> Standard Pumped Discharge Mains</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
+                <span><strong>&gt; 2.5 m/s:</strong> High friction loss, erosion &amp; water hammer risk</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 5: BS 5306-2:1990 ORIFICE SIZING
+           ========================================================= -->
+      <div id="tab-bs5306" class="tab-content">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sfi-600">Module 05 • Fire Services Hydraulic Restriction</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">BS 5306-2:1990 Orifice Sizing (消防減壓孔板計算)</h2>
+          </div>
+          <button onclick="resetTabInputs('tab-bs5306')" class="self-start sm:self-auto text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 no-print">
+            <i class="fa-solid fa-rotate-left"></i> Clear 清除
+          </button>
+        </div>
+
+        <!-- Formula Box -->
+        <div class="bg-slate-50 border-l-4 border-sfi-500 rounded-r-xl p-3.5 mb-6 font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <div class="font-sans text-[11px] font-bold uppercase tracking-wider text-sfi-600 mb-1">BS 5306-2:1990 Formulas (計算公式)</div>
+          <div>Loss (P<sub>x</sub>) = P<sub>1</sub> - P<sub>2</sub></div>
+          <div>&le; 65mm Pipe: P<sub>o</sub> = P<sub>x</sub> &times; (500 / Q)<sup>2</sup></div>
+          <div>&gt; 65mm Pipe: P<sub>o</sub> = P<sub>x</sub> &times; (5000 / Q)<sup>2</sup></div>
+          <div>K Factor = Q / &radic;P<sub>x</sub> <span class="font-sans text-[11px] text-slate-500">(where Q is in L/min and P<sub>x</sub> is in Bar)</span></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Flow Rate 流量 (Q<sub>max</sub>):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="bs-q" step="any" placeholder="e.g., 3100" oninput="calculateBS5306(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="bs-q-unit" onchange="calculateBS5306(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="L_min">L/min</option>
+                  <option value="L_sec">L/sec</option>
+                  <option value="m3_h">m³/h</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Pipe Nominal Bore / Outlet Size 喉管公稱直徑 (mm):
+              </label>
+              <select id="bs-pipe" onchange="calculateBS5306(true); renderBS5306Table();" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                <option value="50">50 mm</option>
+                <option value="65">65 mm</option>
+                <option value="80" selected>80 mm</option>
+                <option value="100">100 mm</option>
+                <option value="150">150 mm</option>
+                <option value="200">200 mm</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Upstream / Pump Head 孔板前壓力 (P<sub>1</sub>):
+                </label>
+                <div class="flex gap-2">
+                  <input type="number" id="bs-p1" step="0.01" placeholder="e.g., 11.7" oninput="calculateBS5306(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                  <select id="bs-p1-unit" onchange="calculateBS5306(true)" class="w-1/3 px-2 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                    <option value="bar">Bar</option>
+                    <option value="psi">psi</option>
+                    <option value="mpa">MPa</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Downstream / Orifice Head 孔板後壓力 (P<sub>2</sub>):
+                </label>
+                <div class="flex gap-2">
+                  <input type="number" id="bs-p2" step="0.01" placeholder="e.g., 7.36" oninput="calculateBS5306(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                  <select id="bs-p2-unit" onchange="calculateBS5306(true)" class="w-1/3 px-2 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                    <option value="bar">Bar</option>
+                    <option value="psi">psi</option>
+                    <option value="mpa">MPa</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <button class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 no-print" onclick="calculateBS5306(false)">
+              <i class="fa-solid fa-calculator"></i> Calculate Orifice Size 計算孔板直徑
+            </button>
+          </div>
+
+          <div class="lg:col-span-5 flex flex-col gap-4">
+            <div id="result-box-bs5306" class="bg-slate-100 border border-slate-200 rounded-2xl p-5 text-center font-semibold text-slate-700">
+              Enter flow rate, pipe size, P1, and P2 to interpolate BS 5306-2 orifice diameter.
+            </div>
+
+            <!-- Collapsible BS 5306-2 Lookup Table Viewer -->
+            <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white">
+              <button type="button" onclick="toggleBS5306Table()" class="w-full px-4 py-2.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between text-xs font-bold text-slate-700 transition">
+                <span><i class="fa-solid fa-table mr-1.5 text-sfi-600"></i>BS 5306-2 Lookup Table (<span id="bs-table-pipe-label">80</span> mm Pipe)</span>
+                <i id="bs-table-chevron" class="fa-solid fa-chevron-down transition-transform"></i>
+              </button>
+              <div id="bs-table-wrapper" class="hidden max-h-56 overflow-y-auto border-t border-slate-200">
+                <table class="w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 sticky top-0">
+                    <tr>
+                      <th class="py-1.5 px-3 font-semibold">P<sub>o</sub> Value</th>
+                      <th class="py-1.5 px-3 font-semibold">Orifice Diameter d (mm)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bs-table-body" class="divide-y divide-slate-100 font-mono"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 6: GENERAL ORIFICE PLATE SIZING
+           ========================================================= -->
+      <div id="tab-orifice" class="tab-content">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-100">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sfi-600">Module 06 • General Hydraulic Restriction</span>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">General Orifice Plate Sizing (通用減壓孔板計算)</h2>
+          </div>
+          <button onclick="resetTabInputs('tab-orifice')" class="self-start sm:self-auto text-xs text-slate-500 hover:text-red-600 font-medium flex items-center gap-1 no-print">
+            <i class="fa-solid fa-rotate-left"></i> Clear 清除
+          </button>
+        </div>
+
+        <!-- Original Note Alert -->
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl mb-5 text-center text-xs sm:text-sm">
+          <i class="fa-solid fa-circle-info mr-1"></i>
+          <strong>Note:</strong> The simplified calculation applies to orifices where the orifice diameter is less than 0.3 of the pipe size (d/D &lt; 0.3).
+        </div>
+
+        <!-- Formula Box -->
+        <div class="bg-slate-50 border-l-4 border-sfi-500 rounded-r-xl p-3.5 mb-6 font-mono text-xs sm:text-sm text-slate-700 leading-relaxed">
+          <div class="font-sans text-[11px] font-bold uppercase tracking-wider text-sfi-600 mb-1">Governing Formula (計算公式)</div>
+          <div>Q = C<sub>d</sub> &times; A &times; &radic;(2&Delta;P / &rho;)</div>
+          <div class="font-sans text-[11px] text-slate-500 mt-1">* Where &rho; = 1000 kg/m³ (Water), A = &pi; &times; (d/2)², and C<sub>d</sub> is Discharge Coefficient</div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-7 space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Flow Rate 流量 (Q):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="orifice-q" step="any" placeholder="e.g., 5" oninput="calculateOrifice(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="orifice-q-unit" onchange="calculateOrifice(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="L_sec">L/sec</option>
+                  <option value="L_min">L/min</option>
+                  <option value="m3_h">m³/h</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">
+                Required Pressure Drop 所需壓降 (&Delta;P):
+              </label>
+              <div class="flex gap-2">
+                <input type="number" id="orifice-p" step="0.1" placeholder="e.g., 1.5" oninput="calculateOrifice(true)" class="w-2/3 px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+                <select id="orifice-p-unit" onchange="calculateOrifice(true)" class="w-1/3 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-medium text-slate-700 cursor-pointer">
+                  <option value="bar">Bar</option>
+                  <option value="psi">psi</option>
+                  <option value="mpa">MPa</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Discharge Coefficient 流量係數 (C<sub>d</sub>):
+                </label>
+                <p class="text-[11px] text-slate-500 mb-1">* Default 0.62 for sharp-edged orifice</p>
+                <input type="number" id="orifice-cd" value="0.62" step="0.01" oninput="calculateOrifice(true)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">
+                  Pipe Internal Dia. 喉管內徑 D (Optional):
+                </label>
+                <p class="text-[11px] text-slate-500 mb-1">* To verify d/D &lt; 0.3 &beta;-ratio rule</p>
+                <input type="number" id="orifice-pipe-d" step="any" placeholder="e.g., 100 mm" oninput="calculateOrifice(true)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sfi-500 outline-none font-medium">
+              </div>
+            </div>
+
+            <button class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 no-print" onclick="calculateOrifice(false)">
+              <i class="fa-solid fa-calculator"></i> Calculate Orifice Diameter 計算孔板直徑
+            </button>
+          </div>
+
+          <div class="lg:col-span-5 flex flex-col gap-4">
+            <div id="result-box-orifice" class="bg-slate-100 border border-slate-200 rounded-2xl p-5 text-center font-semibold text-slate-700">
+              Enter flow rate, pressure drop, and Cd to calculate required orifice diameter.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Print Footer (Only visible when printing PDF submittal) -->
+      <div class="hidden print-only mt-8 pt-4 border-t border-slate-300 text-xs text-slate-500">
+        <div class="flex justify-between items-center">
+          <div>Generated by <strong>SFI Engineering Calculator</strong> (https://www.sunfirst.com.hk/tc/)</div>
+          <div>Signature / Checked By: ___________________________</div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Page Footer -->
+    <footer class="mt-6 text-center text-xs text-slate-500 no-print">
+      <p>&copy; Sun First International Limited (日首國際有限公司) &bull; Engineering Calculation &amp; Selection Utility</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // =========================================================
+    // GLOBAL STATE & UTILITIES
+    // =========================================================
+    let currentActiveTab = 'tab-tank';
+    let lastSummaryText = 'SFI Engineering Calculator - No calculation performed yet.';
+
+    const standardSizes = [24, 50, 60, 80, 100, 200, 300, 500, 750, 1000, 1500, 2000, 3000, 5000];
+    const standardMotorsKW = [0.37, 0.55, 0.75, 1.1, 1.5, 2.2, 3.0, 4.0, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 315];
+
+    // Initialize Date & BS5306 Table on Window Load
+    window.onload = function () {
+      const dateInput = document.getElementById('proj-date');
+      if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+      renderBS5306Table();
+    };
+
+    // Custom Toast Notification (No alert() used)
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'warning' ? 'bg-amber-600' : 'bg-slate-800';
+      toast.className = `${bgClass} text-white px-4 py-2.5 rounded-xl shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 pointer-events-auto transition-all duration-300`;
+      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function toggleProjectPanel() {
+      const panel = document.getElementById('project-panel');
+      panel.classList.toggle('hidden');
+    }
+
+    function switchTab(evt, tabName) {
+      currentActiveTab = tabName;
+      const contents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < contents.length; i++) {
+        contents[i].classList.remove("active");
+      }
+      const btns = document.getElementsByClassName("tab-btn");
+      for (let i = 0; i < btns.length; i++) {
+        btns[i].classList.remove("active", "bg-sfi-600", "text-white", "shadow-sm");
+        btns[i].classList.add("text-slate-600", "hover:bg-white/60");
+      }
+      document.getElementById(tabName).classList.add("active");
+      evt.currentTarget.classList.remove("text-slate-600", "hover:bg-white/60");
+      evt.currentTarget.classList.add("active", "bg-sfi-600", "text-white", "shadow-sm");
+    }
+
+    function resetTabInputs(tabId) {
+      const container = document.getElementById(tabId);
+      const inputs = container.querySelectorAll('input[type="number"]');
+      inputs.forEach(input => {
+        if (input.id === 'orifice-cd') input.value = '0.62';
+        else if (input.id === 'pump-sg') input.value = '1.0';
+        else input.value = '';
+      });
+      showToast('Inputs cleared 已重設輸入數值', 'info');
+    }
+
+    // Copy summary using document.execCommand('copy') for iframe compatibility
+    function copyCurrentSummary() {
+      const projName = document.getElementById('proj-name').value || 'N/A';
+      const projTag = document.getElementById('proj-tag').value || 'N/A';
+      const header = `[SFI Engineering Calculation]\nProject: ${projName} | Tag: ${projTag}\n----------------------------------------\n`;
+      const fullText = header + lastSummaryText;
+
+      const textArea = document.createElement("textarea");
+      textArea.value = fullText;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast('Calculation summary copied to clipboard! 已複製計算結果', 'success');
+      } catch (err) {
+        showToast('Failed to copy summary', 'warning');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    // Load Sample Data for whichever tab is currently active
+    function loadSampleValues() {
+      if (currentActiveTab === 'tab-tank') {
+        document.getElementById('qmax').value = 5;
+        document.getElementById('qmax-unit').value = 'L_sec';
+        document.getElementById('po').value = 4.5;
+        document.getElementById('po-unit').value = 'bar';
+        document.getElementById('pi').value = 3.0;
+        document.getElementById('pi-unit').value = 'bar';
+        document.getElementById('pp').value = 2.7;
+        document.getElementById('pp-unit').value = 'bar';
+        document.getElementById('starts').value = 24;
+        calculateVolume(false);
+      } else if (currentActiveTab === 'tab-vfd-tank') {
+        document.getElementById('vfd-q').value = 3.5;
+        document.getElementById('vfd-q-unit').value = 'L_sec';
+        document.getElementById('vfd-t').value = 10;
+        document.getElementById('vfd-po').value = 4.0;
+        document.getElementById('vfd-po-unit').value = 'bar';
+        document.getElementById('vfd-pi').value = 3.0;
+        document.getElementById('vfd-pi-unit').value = 'bar';
+        calculateVFDTank(false);
+      } else if (currentActiveTab === 'tab-pump') {
+        document.getElementById('pump-q').value = 14;
+        document.getElementById('pump-q-unit').value = 'L_sec';
+        document.getElementById('pump-h').value = 40;
+        document.getElementById('pump-h-unit').value = 'm';
+        document.getElementById('pump-eff').value = 76;
+        document.getElementById('pump-sg').value = 1.0;
+        calculatePumpPower(false);
+      } else if (currentActiveTab === 'tab-pipe') {
+        document.getElementById('pipe-q').value = 4.5;
+        document.getElementById('pipe-q-unit').value = 'L_sec';
+        document.getElementById('pipe-d').value = 65;
+        document.getElementById('pipe-d-unit').value = 'mm';
+        calculateVelocity(false);
+      } else if (currentActiveTab === 'tab-bs5306') {
+        document.getElementById('bs-q').value = 3100;
+        document.getElementById('bs-q-unit').value = 'L_min';
+        document.getElementById('bs-pipe').value = '80';
+        document.getElementById('bs-p1').value = 11.7;
+        document.getElementById('bs-p1-unit').value = 'bar';
+        document.getElementById('bs-p2').value = 7.36;
+        document.getElementById('bs-p2-unit').value = 'bar';
+        calculateBS5306(false);
+      } else if (currentActiveTab === 'tab-orifice') {
+        document.getElementById('orifice-q').value = 5;
+        document.getElementById('orifice-q-unit').value = 'L_sec';
+        document.getElementById('orifice-p').value = 1.5;
+        document.getElementById('orifice-p-unit').value = 'bar';
+        document.getElementById('orifice-cd').value = 0.62;
+        document.getElementById('orifice-pipe-d').value = 100;
+        calculateOrifice(false);
+      }
+      showToast('Sample engineering data loaded 已載入範例數據', 'success');
+    }
+
+    // =========================================================
+    // UNIT CONVERSION FUNCTIONS
+    // =========================================================
+    function convertToLMin(value, unit) {
+      if (unit === 'L_sec') return value * 60;
+      if (unit === 'm3_h') return value * 16.6667;
+      return value;
+    }
+
+    function convertToLSec(value, unit) {
+      if (unit === 'L_min') return value / 60;
+      if (unit === 'm3_h') return value / 3.6;
+      return value;
+    }
+
+    function convertToM3H(value, unit) {
+      if (unit === 'L_min') return value * 0.06;
+      if (unit === 'L_sec') return value * 3.6;
+      return value;
+    }
+
+    function convertToBarGauge(value, unit) {
+      if (unit === 'psi') return value * 0.0689476;
+      if (unit === 'mpa') return value * 10;
+      return value;
+    }
+
+    function convertToMeters(value, unit) {
+      if (unit === 'ft') return value * 0.3048;
+      if (unit === 'bar') return value * 10.197;
+      return value;
+    }
+
+    function convertToMM(value, unit) {
+      if (unit === 'inch') return value * 25.4;
+      return value;
+    }
+
+    // Helper for parallel vessel recommendations when V > 5000L
+    function getParallelVesselSuggestion(V) {
+      const candidates = [1000, 1500, 2000, 3000, 5000];
+      for (let size of candidates) {
+        const count = Math.ceil(V / size);
+        if (count >= 2 && count <= 4) {
+          return `Suggested Parallel Config: ${count} × ${size} L (Total: ${count * size} L)`;
+        }
+      }
+      const count5000 = Math.ceil(V / 5000);
+      return `Suggested Parallel Config: ${count5000} × 5000 L (Total: ${count5000 * 5000} L)`;
+    }
+
+    // =========================================================
+    // TAB 1: FIXED SPEED VESSEL SIZING
+    // =========================================================
+    function autoSetPrecharge() {
+      const rawPi = parseFloat(document.getElementById('pi').value);
+      const piUnit = document.getElementById('pi-unit').value;
+      if (isNaN(rawPi) || rawPi <= 0) {
+        showToast('Please enter Cut-in Pressure (Pi) first! 請先輸入起泵壓力 Pi', 'warning');
+        return;
+      }
+      document.getElementById('pp').value = (rawPi * 0.9).toFixed(2);
+      document.getElementById('pp-unit').value = piUnit;
+      calculateVolume(true);
+      showToast('Pre-charge pressure set to 0.9 × Pi', 'success');
+    }
+
+    function setStarts(val) {
+      document.getElementById('starts').value = val;
+      calculateVolume(true);
+    }
+
+    function calculateVolume(silent = false) {
+      const rawQmax = parseFloat(document.getElementById('qmax').value);
+      const rawPo = parseFloat(document.getElementById('po').value);
+      const rawPi = parseFloat(document.getElementById('pi').value);
+      const rawPp = parseFloat(document.getElementById('pp').value);
+      const a = parseFloat(document.getElementById('starts').value);
+
+      const qUnit = document.getElementById('qmax-unit').value;
+      const poUnit = document.getElementById('po-unit').value;
+      const piUnit = document.getElementById('pi-unit').value;
+      const ppUnit = document.getElementById('pp-unit').value;
+
+      const resultBox = document.getElementById('result-box-tank');
+      const recommendationBox = document.getElementById('recommendation-box');
+      const standardSizeText = document.getElementById('standard-size');
+      const parallelSuggestion = document.getElementById('parallel-tank-suggestion');
+
+      if (isNaN(rawQmax) || isNaN(rawPo) || isNaN(rawPi) || isNaN(rawPp) || isNaN(a) || rawQmax <= 0 || a <= 0) {
+        if (!silent) {
+          resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>Please fill in all fields with valid positive numbers!</span>`;
+        }
+        recommendationBox.classList.add('hidden');
+        return;
+      }
+
+      const Qmax = convertToLMin(rawQmax, qUnit);
+      const po_gauge = convertToBarGauge(rawPo, poUnit);
+      const pi_gauge = convertToBarGauge(rawPi, piUnit);
+      const pp_gauge = convertToBarGauge(rawPp, ppUnit);
+
+      const Po = po_gauge + 1;
+      const Pi = pi_gauge + 1;
+      const Pp = pp_gauge + 1;
+
+      if (Po <= Pi) {
+        resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Error: Cut-out pressure (P<sub>o</sub>) must be greater than Cut-in pressure (P<sub>i</sub>)!</span>`;
+        recommendationBox.classList.add('hidden');
+        return;
+      }
+
+      const V = (16.5 * Qmax * Po * Pi) / (a * (Po - Pi) * Pp);
+      const usableVolume = V * Pp * ((1 / Pi) - (1 / Po));
+      const drawdownRatio = (usableVolume / V) * 100;
+
+      let prechargeWarning = '';
+      if (pp_gauge > pi_gauge) {
+        prechargeWarning = `
+          <div class="mt-3 p-2 bg-amber-100 border border-amber-300 rounded-lg text-xs text-amber-900 text-left">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+            <strong>Warning:</strong> Pre-charge P<sub>p</sub> (${pp_gauge.toFixed(2)} bar) exceeds Cut-in P<sub>i</sub> (${pi_gauge.toFixed(2)} bar). Recommend P<sub>p</sub> &le; 0.9 &times; P<sub>i</sub> (${(pi_gauge * 0.9).toFixed(2)} bar).
+          </div>
+        `;
+      }
+
+      resultBox.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 mb-3 text-xs">
+          <div>
+            <span class="text-slate-500 block">Usable Volume (&Delta;V):</span>
+            <strong class="text-slate-800 text-sm font-mono">${usableVolume.toFixed(1)} L</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Drawdown Factor:</span>
+            <strong class="text-slate-800 text-sm font-mono">${drawdownRatio.toFixed(1)}%</strong>
+          </div>
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Theoretical Vessel Volume (計算理論容積)</div>
+        <div class="text-3xl font-extrabold text-sfi-600 mt-1 font-mono">${V.toFixed(1)} L</div>
+        ${prechargeWarning}
+      `;
+
+      const recommendedSize = standardSizes.find(size => size >= V);
+      recommendationBox.classList.remove('hidden');
+      if (recommendedSize) {
+        standardSizeText.innerHTML = `${recommendedSize} L`;
+        const nextIdx = standardSizes.indexOf(recommendedSize) + 1;
+        parallelSuggestion.innerHTML = nextIdx < standardSizes.length
+          ? `Next size up: ${standardSizes[nextIdx]} L`
+          : `Maximum single standard vessel size`;
+      } else {
+        standardSizeText.innerHTML = `Parallel / Custom`;
+        parallelSuggestion.innerHTML = getParallelVesselSuggestion(V);
+      }
+
+      lastSummaryText = `Module: Fixed Speed Vessel Sizing\nFlow Qmax: ${rawQmax} ${qUnit} (${Qmax.toFixed(1)} L/min)\nPo: ${po_gauge.toFixed(2)} bar | Pi: ${pi_gauge.toFixed(2)} bar | Pp: ${pp_gauge.toFixed(2)} bar\nStarts/hr (a): ${a}\nUsable Volume (ΔV): ${usableVolume.toFixed(1)} L\nTheoretical Vessel Size (V): ${V.toFixed(1)} L\nRecommended Standard Vessel: ${recommendedSize ? recommendedSize + ' L' : getParallelVesselSuggestion(V)}`;
+    }
+
+    // =========================================================
+    // TAB 2: VFD PRESSURE VESSEL SIZING
+    // =========================================================
+    function setVfdTime(sec) {
+      document.getElementById('vfd-t').value = sec;
+      calculateVFDTank(true);
+    }
+
+    function calculateVFDTank(silent = false) {
+      const rawQ = parseFloat(document.getElementById('vfd-q').value);
+      const T = parseFloat(document.getElementById('vfd-t').value);
+      const rawPo = parseFloat(document.getElementById('vfd-po').value);
+      const rawPi = parseFloat(document.getElementById('vfd-pi').value);
+
+      const qUnit = document.getElementById('vfd-q-unit').value;
+      const poUnit = document.getElementById('vfd-po-unit').value;
+      const piUnit = document.getElementById('vfd-pi-unit').value;
+
+      const resultBox = document.getElementById('result-box-vfd');
+      const recommendationBox = document.getElementById('recommendation-box-vfd');
+      const standardSizeText = document.getElementById('standard-size-vfd');
+      const parallelSuggestion = document.getElementById('parallel-vfd-suggestion');
+
+      if (isNaN(rawQ) || isNaN(T) || isNaN(rawPo) || isNaN(rawPi) || rawQ <= 0 || T <= 0) {
+        if (!silent) {
+          resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>Please fill in all fields with valid numbers!</span>`;
+        }
+        recommendationBox.classList.add('hidden');
+        return;
+      }
+
+      const Q_lsec = convertToLSec(rawQ, qUnit);
+      const Po = convertToBarGauge(rawPo, poUnit);
+      const Pi = convertToBarGauge(rawPi, piUnit);
+
+      if (Po <= Pi) {
+        resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Error: Constant working pressure (P<sub>o</sub>) must be greater than Minimum working pressure (P<sub>i</sub>)!</span>`;
+        recommendationBox.classList.add('hidden');
+        return;
+      }
+
+      const usableVolume = Q_lsec * T;
+      const pressureFactor = (Po + 1) / (Po - Pi);
+      const V = usableVolume * pressureFactor;
+
+      resultBox.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 mb-3 text-xs">
+          <div>
+            <span class="text-slate-500 block">Usable Volume (&Delta;V):</span>
+            <strong class="text-slate-800 text-sm font-mono">${usableVolume.toFixed(1)} L</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Pressure Factor:</span>
+            <strong class="text-slate-800 text-sm font-mono">&times;${pressureFactor.toFixed(2)}</strong>
+          </div>
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Theoretical VFD Vessel Size (理論容積)</div>
+        <div class="text-3xl font-extrabold text-sfi-600 mt-1 font-mono">${V.toFixed(1)} L</div>
+      `;
+
+      const recommendedSize = standardSizes.find(size => size >= V);
+      recommendationBox.classList.remove('hidden');
+      if (recommendedSize) {
+        standardSizeText.innerHTML = `${recommendedSize} L`;
+        parallelSuggestion.innerHTML = `Suggested Pre-charge: ~${(Pi * 0.9).toFixed(2)} Bar`;
+      } else {
+        standardSizeText.innerHTML = `Parallel / Custom`;
+        parallelSuggestion.innerHTML = getParallelVesselSuggestion(V);
+      }
+
+      lastSummaryText = `Module: VFD Pressure Vessel Sizing\nDesign Flow Q: ${rawQ} ${qUnit} (${Q_lsec.toFixed(2)} L/sec)\nBuffer Time T: ${T} sec | Po: ${Po.toFixed(2)} bar | Pi: ${Pi.toFixed(2)} bar\nUsable Volume (ΔV): ${usableVolume.toFixed(1)} L\nTheoretical VFD Vessel Size (V): ${V.toFixed(1)} L\nRecommended Standard Vessel: ${recommendedSize ? recommendedSize + ' L' : getParallelVesselSuggestion(V)}`;
+    }
+
+    // =========================================================
+    // TAB 3: PUMP SHAFT POWER CALCULATOR
+    // =========================================================
+    function calculatePumpPower(silent = false) {
+      const rawQ = parseFloat(document.getElementById('pump-q').value);
+      const rawH = parseFloat(document.getElementById('pump-h').value);
+      const eff = parseFloat(document.getElementById('pump-eff').value);
+      const sg = parseFloat(document.getElementById('pump-sg').value) || 1.0;
+      const margin = parseFloat(document.getElementById('pump-margin').value) || 1.0;
+
+      const qUnit = document.getElementById('pump-q-unit').value;
+      const hUnit = document.getElementById('pump-h-unit').value;
+      const resultBox = document.getElementById('result-box-pump');
+
+      if (isNaN(rawQ) || isNaN(rawH) || isNaN(eff) || eff <= 0 || eff > 100 || rawQ <= 0 || rawH <= 0) {
+        if (!silent) {
+          resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>Please enter valid positive numbers (Efficiency 1–100%)!</span>`;
+        }
+        return;
+      }
+
+      const Q = convertToM3H(rawQ, qUnit);
+      const H = convertToMeters(rawH, hUnit);
+      const hydraulicPower = (Q * H * sg) / 367;
+      const P = hydraulicPower / (eff / 100);
+      const P_hp = P * 1.34102;
+
+      const designMotorLoad = P * margin;
+      const recommendedMotor = standardMotorsKW.find(m => m >= designMotorLoad);
+      // Approximate 380V 3-Phase 50Hz Full Load Current: I = P(W) / (sqrt(3) * 380 * cosPhi(0.85) * motorEff(0.90)) ≈ kW * 1.98
+      const estCurrentA = recommendedMotor ? (recommendedMotor * 1.98).toFixed(1) : (P * 1.98).toFixed(1);
+
+      resultBox.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 mb-3 text-xs">
+          <div>
+            <span class="text-slate-500 block">Hydraulic Power (水功率):</span>
+            <strong class="text-slate-800 text-sm font-mono">${hydraulicPower.toFixed(2)} kW</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Horsepower (馬力):</span>
+            <strong class="text-slate-800 text-sm font-mono">${P_hp.toFixed(2)} HP</strong>
+          </div>
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Required Shaft Power 水泵軸功率 (P<sub>2</sub>)</div>
+        <div class="text-3xl font-extrabold text-sfi-600 my-1 font-mono">${P.toFixed(2)} kW</div>
+
+        <div class="mt-4 pt-3 border-t border-slate-200 bg-amber-50/90 rounded-xl p-3 border border-amber-200">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-amber-800">Recommended Standard IEC Motor (建議摩打)</div>
+          <div class="text-2xl font-extrabold text-pink-600 mt-0.5 font-mono">
+            ${recommendedMotor ? recommendedMotor + ' kW' : 'Custom > 315 kW'}
+          </div>
+          <div class="text-xs text-slate-600 mt-1">
+            Est. 380V 3Ph Full Load Current: <strong class="font-mono">~${estCurrentA} A</strong>
+          </div>
+        </div>
+      `;
+
+      lastSummaryText = `Module: Pump Shaft Power\nFlow Q: ${rawQ} ${qUnit} (${Q.toFixed(2)} m³/h) | Total Head H: ${rawH} ${hUnit} (${H.toFixed(2)} m)\nEfficiency: ${eff}% | SG: ${sg}\nHydraulic Power: ${hydraulicPower.toFixed(2)} kW\nRequired Shaft Power (P2): ${P.toFixed(2)} kW (${P_hp.toFixed(2)} HP)\nRecommended IEC Motor: ${recommendedMotor ? recommendedMotor + ' kW' : '>315 kW'}`;
+    }
+
+    // =========================================================
+    // TAB 4: PIPE VELOCITY CALCULATOR
+    // =========================================================
+    function applyPipePreset() {
+      const presetVal = document.getElementById('pipe-preset').value;
+      if (presetVal) {
+        document.getElementById('pipe-d').value = presetVal;
+        document.getElementById('pipe-d-unit').value = 'mm';
+        calculateVelocity(true);
+      }
+    }
+
+    function calculateVelocity(silent = false) {
+      const rawQ = parseFloat(document.getElementById('pipe-q').value);
+      const rawD = parseFloat(document.getElementById('pipe-d').value);
+      const qUnit = document.getElementById('pipe-q-unit').value;
+      const dUnit = document.getElementById('pipe-d-unit').value;
+      const resultBox = document.getElementById('result-box-pipe');
+
+      if (isNaN(rawQ) || isNaN(rawD) || rawD <= 0 || rawQ <= 0) {
+        if (!silent) {
+          resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>Please enter valid positive numbers!</span>`;
+        }
+        return;
+      }
+
+      const Q_lmin = convertToLMin(rawQ, qUnit);
+      const D_mm = convertToMM(rawD, dUnit);
+
+      const Q_ms = Q_lmin / 60000;
+      const radius_m = (D_mm / 2) / 1000;
+      const Area = Math.PI * Math.pow(radius_m, 2);
+      const Area_cm2 = Area * 10000;
+      const v = Q_ms / Area;
+
+      let statusBadge = '';
+      if (v <= 1.5) {
+        statusBadge = `<div class="mt-3 p-2.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-semibold"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Optimal Velocity (&le; 1.5 m/s) — Suitable for Suction &amp; Discharge</div>`;
+      } else if (v <= 2.5) {
+        statusBadge = `<div class="mt-3 p-2.5 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 text-xs font-semibold"><i class="fa-solid fa-circle-info text-amber-600 mr-1"></i>Acceptable Discharge Velocity (1.5–2.5 m/s)</div>`;
+      } else {
+        statusBadge = `<div class="mt-3 p-2.5 rounded-xl bg-red-100 border border-red-300 text-red-800 text-xs font-semibold"><i class="fa-solid fa-triangle-exclamation text-red-600 mr-1"></i>Warning: Velocity too high (&gt; 2.5 m/s), risk of water hammer &amp; noise!</div>`;
+      }
+
+      resultBox.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 mb-3 text-xs">
+          <div>
+            <span class="text-slate-500 block">Internal Dia. (內徑):</span>
+            <strong class="text-slate-800 text-sm font-mono">${D_mm.toFixed(1)} mm</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Pipe Area (截面積):</span>
+            <strong class="text-slate-800 text-sm font-mono">${Area_cm2.toFixed(2)} cm²</strong>
+          </div>
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Flow Velocity 喉管流速 (v)</div>
+        <div class="text-3xl font-extrabold text-sfi-600 mt-1 font-mono">${v.toFixed(2)} m/s</div>
+        ${statusBadge}
+      `;
+
+      lastSummaryText = `Module: Pipe Velocity Calculator\nFlow Q: ${rawQ} ${qUnit} | Pipe ID: ${D_mm.toFixed(1)} mm\nCross-Sectional Area: ${Area_cm2.toFixed(2)} cm²\nCalculated Velocity: ${v.toFixed(2)} m/s`;
+    }
+
+    // =========================================================
+    // TAB 5: BS 5306-2 ORIFICE SIZING
+    // =========================================================
+    const bs5306Data = {
+      "50": [
+        {po: 2.5, d: 25.9}, {po: 2.25, d: 26.5}, {po: 2, d: 27.1}, {po: 1.75, d: 27.9},
+        {po: 1.5, d: 28.8}, {po: 1.25, d: 29.6}, {po: 1, d: 30.9}, {po: 0.9, d: 31.5},
+        {po: 0.8, d: 32.2}, {po: 0.7, d: 32.8}, {po: 0.6, d: 33.7}, {po: 0.5, d: 34.7},
+        {po: 0.4, d: 35.9}, {po: 0.3, d: 37.5}, {po: 0.2, d: 39.7}, {po: 0.1, d: 42.7}
+      ],
+      "65": [
+        {po: 0.8, d: 34.5}, {po: 0.7, d: 35.3}, {po: 0.6, d: 36.3}, {po: 0.5, d: 37.6},
+        {po: 0.4, d: 39.3}, {po: 0.3, d: 41.2}, {po: 0.2, d: 44.2}, {po: 0.1, d: 49.1},
+        {po: 0.05, d: 53.6}
+      ],
+      "80": [
+        {po: 35, d: 41.9}, {po: 30, d: 43}, {po: 25, d: 44.8}, {po: 20, d: 46.4},
+        {po: 15, d: 48.9}, {po: 10, d: 52.3}, {po: 9, d: 53.2}, {po: 8, d: 54.1},
+        {po: 7, d: 55.3}, {po: 6, d: 56.6}, {po: 5, d: 58.2}, {po: 4, d: 59.8},
+        {po: 3, d: 62}, {po: 2, d: 65}
+      ],
+      "100": [
+        {po: 10, d: 56.2}, {po: 9, d: 57.6}, {po: 8, d: 59}, {po: 7, d: 60.4},
+        {po: 6, d: 62}, {po: 5, d: 63.9}, {po: 4, d: 66.5}, {po: 3, d: 69.7},
+        {po: 2, d: 74.2}, {po: 1, d: 81.1}, {po: 0.9, d: 82.2}, {po: 0.8, d: 83.3},
+        {po: 0.7, d: 84.4}, {po: 0.6, d: 85.7}, {po: 0.5, d: 87}
+      ],
+      "150": [
+        {po: 2, d: 82.3}, {po: 1, d: 95.8}, {po: 0.9, d: 97.1}, {po: 0.8, d: 99.3},
+        {po: 0.7, d: 102}, {po: 0.6, d: 104}, {po: 0.5, d: 107}, {po: 0.4, d: 110},
+        {po: 0.3, d: 115}, {po: 0.2, d: 121}
+      ],
+      "200": [
+        {po: 0.9, d: 106}, {po: 0.8, d: 108}, {po: 0.7, d: 111}, {po: 0.6, d: 114},
+        {po: 0.5, d: 118}, {po: 0.4, d: 122}, {po: 0.3, d: 129}, {po: 0.2, d: 138},
+        {po: 0.1, d: 153}, {po: 0.05, d: 166}
+      ]
+    };
+
+    function toggleBS5306Table() {
+      const wrapper = document.getElementById('bs-table-wrapper');
+      const chevron = document.getElementById('bs-table-chevron');
+      wrapper.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
+    }
+
+    function renderBS5306Table(highlightPo1 = null, highlightPo2 = null) {
+      const pipeSize = document.getElementById('bs-pipe').value;
+      document.getElementById('bs-table-pipe-label').textContent = pipeSize;
+      const tbody = document.getElementById('bs-table-body');
+      const table = bs5306Data[pipeSize] || [];
+
+      tbody.innerHTML = table.map(row => {
+        const isHighlighted = (row.po === highlightPo1 || row.po === highlightPo2);
+        return `
+          <tr class="${isHighlighted ? 'bg-amber-100 font-bold text-amber-900' : 'hover:bg-slate-50'}">
+            <td class="py-1.5 px-3">${row.po}</td>
+            <td class="py-1.5 px-3">${row.d.toFixed(1)} mm ${isHighlighted ? '&larr; Bracket' : ''}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function calculateBS5306(silent = false) {
+      const rawQ = parseFloat(document.getElementById('bs-q').value);
+      const pipeSize = document.getElementById('bs-pipe').value;
+      const rawP1 = parseFloat(document.getElementById('bs-p1').value);
+      const rawP2 = parseFloat(document.getElementById('bs-p2').value);
+
+      const qUnit = document.getElementById('bs-q-unit').value;
+      const p1Unit = document.getElementById('bs-p1-unit').value;
+      const p2Unit = document.getElementById('bs-p2-unit').value;
+
+      const resultBox = document.getElementById('result-box-bs5306');
+
+      if (isNaN(rawQ) || isNaN(rawP1) || isNaN(rawP2) || rawQ <= 0) {
+        if (!silent) {
+          resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>Please fill in all fields!</span>`;
+        }
+        return;
+      }
+
+      const Qmax = convertToLMin(rawQ, qUnit);
+      const P1 = convertToBarGauge(rawP1, p1Unit);
+      const P2 = convertToBarGauge(rawP2, p2Unit);
+
+      const Px = P1 - P2;
+
+      if (Px <= 0) {
+        resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Error: Pump Head (P<sub>1</sub>) must be greater than Orifice Head (P<sub>2</sub>)!</span>`;
+        return;
+      }
+
+      let Po = 0;
+      if (parseInt(pipeSize) <= 65) {
+        Po = Px * Math.pow((500 / Qmax), 2);
+      } else {
+        Po = Px * Math.pow((5000 / Qmax), 2);
+      }
+
+      const kFactor = Qmax / Math.sqrt(Px);
+      const table = bs5306Data[pipeSize];
+      const maxTablePo = table[0].po;
+      const minTablePo = table[table.length - 1].po;
+
+      let p1, p2, d1, d2;
+      let isExtrapolated = false;
+
+      if (Po > maxTablePo) {
+        p1 = table[0].po; d1 = table[0].d;
+        p2 = table[1].po; d2 = table[1].d;
+        isExtrapolated = true;
+      } else if (Po < minTablePo) {
+        const len = table.length;
+        p1 = table[len - 2].po; d1 = table[len - 2].d;
+        p2 = table[len - 1].po; d2 = table[len - 1].d;
+        isExtrapolated = true;
+      } else {
+        for (let i = 0; i < table.length - 1; i++) {
+          if (Po <= table[i].po && Po >= table[i + 1].po) {
+            p1 = table[i].po; d1 = table[i].d;
+            p2 = table[i + 1].po; d2 = table[i + 1].d;
+            break;
+          }
+        }
+      }
+
+      renderBS5306Table(p1, p2);
+
+      const fraction = (Po - p1) / (p2 - p1);
+      const orificeSize = d1 + fraction * (d2 - d1);
+
+      let extraMsg = '';
+      if (isExtrapolated) {
+        extraMsg = `
+          <div class="mt-3 p-2.5 bg-amber-100 border border-amber-300 rounded-xl text-xs text-amber-900 text-left">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+            <strong>Note: Extrapolated beyond BS 5306-2 table limits!</strong><br>
+            Valid P<sub>o</sub> range for ${pipeSize}mm pipe is <strong>${minTablePo} – ${maxTablePo}</strong> (Current P<sub>o</sub> = ${Po.toFixed(4)}).
+          </div>
+        `;
+      }
+
+      resultBox.innerHTML = `
+        <div class="grid grid-cols-3 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 mb-3 text-xs">
+          <div>
+            <span class="text-slate-500 block">Loss (P<sub>x</sub>):</span>
+            <strong class="text-slate-800 font-mono">${Px.toFixed(2)} Bar</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">P<sub>o</sub> Value:</span>
+            <strong class="text-slate-800 font-mono">${Po.toFixed(4)}</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">K Factor:</span>
+            <strong class="text-slate-800 font-mono">${kFactor.toFixed(2)}</strong>
+          </div>
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Interpolated Orifice Size (內插孔板直徑)</div>
+        <div class="text-3xl font-extrabold text-pink-600 mt-1 font-mono">
+          ${orificeSize > 0 && orificeSize < parseFloat(pipeSize) ? orificeSize.toFixed(2) + ' mm' : orificeSize.toFixed(2) + ' mm (Out of Range)'}
+        </div>
+        <div class="text-[11px] text-slate-500 mt-1 font-mono">
+          Bracket: P<sub>o</sub> [${p1} &rarr; ${p2}] | d [${d1}mm &rarr; ${d2}mm]
+        </div>
+        ${extraMsg}
+      `;
+
+      lastSummaryText = `Module: BS 5306-2:1990 Orifice Sizing\nFlow Qmax: ${Qmax.toFixed(1)} L/min | Pipe Size: ${pipeSize} mm\nP1: ${P1.toFixed(2)} bar | P2: ${P2.toFixed(2)} bar | Loss Px: ${Px.toFixed(2)} bar\nPo Value: ${Po.toFixed(4)} | K Factor: ${kFactor.toFixed(2)}\nInterpolated Orifice Diameter: ${orificeSize.toFixed(2)} mm ${isExtrapolated ? '(Extrapolated)' : ''}`;
+    }
+
+    // =========================================================
+    // TAB 6: GENERAL ORIFICE SIZING
+    // =========================================================
+    function calculateOrifice(silent = false) {
+      const rawQ = parseFloat(document.getElementById('orifice-q').value);
+      const rawP = parseFloat(document.getElementById('orifice-p').value);
+      const Cd = parseFloat(document.getElementById('orifice-cd').value);
+      const pipeD = parseFloat(document.getElementById('orifice-pipe-d').value);
+
+      const qUnit = document.getElementById('orifice-q-unit').value;
+      const pUnit = document.getElementById('orifice-p-unit').value;
+      const resultBox = document.getElementById('result-box-orifice');
+
+      if (isNaN(rawQ) || isNaN(rawP) || isNaN(Cd) || rawQ <= 0 || rawP <= 0 || Cd <= 0) {
+        if (!silent) {
+          resultBox.innerHTML = `<span class="text-red-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>Please enter valid positive numbers!</span>`;
+        }
+        return;
+      }
+
+      const Q_lsec = convertToLSec(rawQ, qUnit);
+      const Q_m3s = Q_lsec / 1000;
+
+      const P_bar = convertToBarGauge(rawP, pUnit);
+      const P_pa = P_bar * 100000;
+
+      const v = Math.sqrt((2 * P_pa) / 1000);
+      const Area = Q_m3s / (Cd * v);
+
+      const d_m = Math.sqrt((4 * Area) / Math.PI);
+      const d_mm = d_m * 1000;
+
+      let betaHtml = '';
+      if (!isNaN(pipeD) && pipeD > 0) {
+        const beta = d_mm / pipeD;
+        // ISO 5167 / Bernoulli with velocity of approach factor: d_corr = d_simple / (1 + (d_simple/D)^4)^0.25
+        const d_corrected = d_mm / Math.pow(1 + Math.pow(beta, 4), 0.25);
+
+        if (beta >= 1.0) {
+          betaHtml = `
+            <div class="mt-3 p-2.5 bg-red-100 border border-red-300 rounded-xl text-xs text-red-800 text-left">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+              <strong>Error:</strong> Calculated orifice (${d_mm.toFixed(1)} mm) is larger than pipe diameter (${pipeD} mm)!
+            </div>
+          `;
+        } else if (beta >= 0.3) {
+          betaHtml = `
+            <div class="mt-3 p-2.5 bg-amber-100 border border-amber-300 rounded-xl text-xs text-amber-900 text-left">
+              <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+              <strong>&beta;-Ratio Notice (d/D = ${beta.toFixed(2)} &ge; 0.30):</strong><br>
+              Including approach velocity factor 1/&radic;(1-&beta;⁴), corrected orifice diameter = <strong class="font-mono">${d_corrected.toFixed(2)} mm</strong>.
+            </div>
+          `;
+        } else {
+          betaHtml = `
+            <div class="mt-3 p-2 bg-emerald-100 border border-emerald-300 rounded-xl text-xs text-emerald-900">
+              <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>
+              &beta;-Ratio (d/D = ${beta.toFixed(2)}) &lt; 0.30 verified.
+            </div>
+          `;
+        }
+      }
+
+      resultBox.innerHTML = `
+        <div class="grid grid-cols-2 gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 mb-3 text-xs">
+          <div>
+            <span class="text-slate-500 block">Jet Velocity &radic;(2&Delta;P/&rho;):</span>
+            <strong class="text-slate-800 font-mono">${v.toFixed(2)} m/s</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Orifice Area (A):</span>
+            <strong class="text-slate-800 font-mono">${(Area * 10000).toFixed(2)} cm²</strong>
+          </div>
+        </div>
+        <div class="text-xs uppercase tracking-wider text-slate-500">Required Orifice Diameter (所需孔板直徑)</div>
+        <div class="text-3xl font-extrabold text-sfi-600 mt-1 font-mono">${d_mm.toFixed(2)} mm</div>
+        ${betaHtml}
+      `;
+
+      lastSummaryText = `Module: General Orifice Plate Sizing\nFlow Q: ${rawQ} ${qUnit} (${Q_lsec.toFixed(2)} L/sec) | Pressure Drop ΔP: ${P_bar.toFixed(2)} bar | Cd: ${Cd}\nRequired Orifice Diameter: ${d_mm.toFixed(2)} mm`;
+    }
+  </script>
+</body>
+</html>
